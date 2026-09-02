@@ -2,10 +2,10 @@ import api from './axios';
 import { API_ENDPOINTS } from '../../constants/apiEndpoints';
 
 const DEFAULT_ANALYTICS = {
-  users: { vendor: 12, trader: 5, 'team-member': 30, admin: 1 },
-  leads: { total: 150, byStatus: { new: 50, quoted: 80, contacted: 10, accepted: 8, rejected: 2 } },
-  products: { total: 200, active: 190 },
-  revenue: { totalQuoted: 500000, totalExpectedMargin: 50000 },
+  users: { vendor: 2, trader: 1, 'team-member': 1, admin: 1 },
+  leads: { total: 4, byStatus: { new: 3, quoted: 1, contacted: 0, accepted: 0, rejected: 0 } },
+  products: { total: 10, active: 8 },
+  revenue: { totalQuoted: 116745.40, totalExpectedMargin: 11745.40 },
 };
 
 const DEFAULT_USERS = [
@@ -17,31 +17,40 @@ const DEFAULT_USERS = [
 
 const DEFAULT_LEADS = [
   {
-    _id: 'lead_101',
-    customerName: 'City General Hospital',
-    customerEmail: 'procurement@cityhospital.org',
-    customerPhone: '+1 555-0192',
+    _id: 'lead_real_001',
+    customerName: 'Virat',
+    customerEmail: 'nileshkumar95559926@gmail.com',
+    customerPhone: '9555992690',
     status: 'quoted',
     vendorName: 'Star Nilesh (starnilesh38@gmail.com)',
-    quote: { baseTotal: 45000, marginApplied: 5000, finalTotal: 50000 },
+    quote: { baseTotal: 105000, marginApplied: 11745.40, finalTotal: 116745.40 },
   },
   {
-    _id: 'lead_102',
-    customerName: 'St. Jude Children Clinic',
-    customerEmail: 'admin@stjudeclinic.org',
-    customerPhone: '+1 555-0348',
+    _id: 'lead_real_002',
+    customerName: 'suryasangam',
+    customerEmail: 'nileshkumar95559926@gmail.com',
+    customerPhone: '9555992690',
     status: 'new',
-    vendorName: 'Nilesh Kumar (nileshkumar95559926@gmail.com)',
+    vendorName: 'Star Nilesh (starnilesh38@gmail.com)',
     quote: null,
   },
   {
-    _id: 'lead_103',
-    customerName: 'Metro Diagnostic Center',
-    customerEmail: 'info@metrodiagnostics.com',
-    customerPhone: '+1 555-0812',
-    status: 'accepted',
+    _id: 'lead_real_003',
+    customerName: 'hospital',
+    customerEmail: 'sumanprap6387@gmail.com',
+    customerPhone: '9555992690',
+    status: 'new',
     vendorName: 'Star Nilesh (starnilesh38@gmail.com)',
-    quote: { baseTotal: 120000, marginApplied: 15000, finalTotal: 135000 },
+    quote: null,
+  },
+  {
+    _id: 'lead_real_004',
+    customerName: 'suryasangam',
+    customerEmail: 'sumanprap6387@gmail.com',
+    customerPhone: '9555992690',
+    status: 'new',
+    vendorName: 'Star Nilesh (starnilesh38@gmail.com)',
+    quote: null,
   },
 ];
 
