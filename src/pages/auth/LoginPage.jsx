@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Mail, Lock, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { ROLES } from '../../constants/roles';
 import { tokenStorage } from '../../services/storage/tokenStorage';
 
@@ -13,10 +13,14 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
-  const { login, loading, error: authError } = useAuthStore();
+  const { login, loading, error: authError, clearError } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    clearError();
+  }, []);
 
   const validate = () => {
     const newErrors = {};
@@ -48,40 +52,6 @@ export const LoginPage = () => {
 
       navigate(targetPath, { replace: true });
     }
-  };
-
-  const handleConfirmAndLogin = () => {
-    const verifiedUser = {
-      id: `usr_${Date.now()}`,
-      firstName: email.split('@')[0] || 'Vendor',
-      lastName: 'Partner',
-      email: email.trim() || 'vendor@company.com',
-      role: ROLES.VENDOR,
-      isConfirmed: true,
-    };
-    const sessionToken = `session_access_token_${Date.now()}`;
-
-    tokenStorage.setAccessToken(sessionToken);
-    tokenStorage.setRefreshToken(sessionToken);
-    tokenStorage.setUser(verifiedUser);
-
-    useAuthStore.setState({
-      user: verifiedUser,
-      token: sessionToken,
-      refreshToken: sessionToken,
-      role: ROLES.VENDOR,
-      isAuthenticated: true,
-      loading: false,
-      error: null,
-    });
-
-    addToast({
-      type: 'success',
-      title: 'Email Confirmed Successfully',
-      message: `Welcome ${verifiedUser.firstName}! Your email is verified. Logged in to Vendor CRM.`,
-    });
-
-    navigate('/dashboard', { replace: true });
   };
 
   const handleDemoAdminLogin = () => {
@@ -117,8 +87,6 @@ export const LoginPage = () => {
     navigate('/admin', { replace: true });
   };
 
-  const isEmailConfirmError = authError && authError.toLowerCase().includes('confirm your email');
-
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-soft-lg backdrop-blur-md">
       <div className="text-center mb-6">
@@ -131,20 +99,8 @@ export const LoginPage = () => {
       </div>
 
       {authError && (
-        <div className="mb-4 p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 text-xs font-medium text-rose-700 dark:text-rose-300 space-y-2">
-          <p>{authError}</p>
-          {isEmailConfirmError && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full mt-1 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 hover:bg-rose-100 dark:hover:bg-rose-900/60 font-bold"
-              leftIcon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-              onClick={handleConfirmAndLogin}
-            >
-              Verify Email & Sign In Now
-            </Button>
-          )}
+        <div className="mb-4 p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 text-xs font-medium text-rose-700 dark:text-rose-300">
+          {authError}
         </div>
       )}
 
@@ -154,7 +110,10 @@ export const LoginPage = () => {
           type="email"
           placeholder="name@company.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            if (authError) clearError();
+            setEmail(e.target.value);
+          }}
           error={errors.email}
           leftIcon={<Mail className="w-4 h-4" />}
           required
@@ -165,7 +124,10 @@ export const LoginPage = () => {
           type="password"
           placeholder="••••••••"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            if (authError) clearError();
+            setPassword(e.target.value);
+          }}
           error={errors.password}
           leftIcon={<Lock className="w-4 h-4" />}
           required

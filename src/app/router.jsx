@@ -12,6 +12,7 @@ import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { AcceptInvitationPage } from '../pages/auth/AcceptInvitationPage';
+import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 
 // Dashboard Shell
 import { DashboardShellPage } from '../pages/dashboard/DashboardShellPage';
@@ -53,6 +54,8 @@ export const router = createBrowserRouter([
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/accept-invitation', element: <AcceptInvitationPage /> },
+      { path: '/verify-email', element: <VerifyEmailPage /> },
+      { path: '/confirm-email', element: <VerifyEmailPage /> },
     ],
   },
 

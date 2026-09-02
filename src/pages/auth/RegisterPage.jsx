@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { useUIStore } from '../../store/uiStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Mail, Lock, User, Store, Building2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { ROLES } from '../../constants/roles';
-import { tokenStorage } from '../../services/storage/tokenStorage';
 
 export const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -19,11 +17,14 @@ export const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { register, loading, error: authError } = useAuthStore();
-  const { addToast } = useUIStore();
-  const navigate = useNavigate();
+  const { register, loading, error: authError, clearError } = useAuthStore();
+
+  useEffect(() => {
+    clearError();
+  }, []);
 
   const handleChange = (e) => {
+    if (authError) clearError();
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -50,40 +51,6 @@ export const RegisterPage = () => {
     }
   };
 
-  const handleInstantVerificationLogin = () => {
-    const verifiedUser = {
-      id: `usr_${Date.now()}`,
-      firstName: formData.firstName.trim() || 'Vendor',
-      lastName: formData.lastName.trim() || 'Partner',
-      email: formData.email.trim(),
-      role: formData.role || ROLES.VENDOR,
-      isConfirmed: true,
-    };
-    const sessionToken = `session_access_token_${Date.now()}`;
-
-    tokenStorage.setAccessToken(sessionToken);
-    tokenStorage.setRefreshToken(sessionToken);
-    tokenStorage.setUser(verifiedUser);
-
-    useAuthStore.setState({
-      user: verifiedUser,
-      token: sessionToken,
-      refreshToken: sessionToken,
-      role: formData.role || ROLES.VENDOR,
-      isAuthenticated: true,
-      loading: false,
-      error: null,
-    });
-
-    addToast({
-      type: 'success',
-      title: 'Account Activated Successfully',
-      message: `Welcome ${verifiedUser.firstName}! Your email has been verified. Welcome to LeadMS CRM.`,
-    });
-
-    navigate('/dashboard', { replace: true });
-  };
-
   if (isSubmitted) {
     return (
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-soft-lg text-center space-y-4">
@@ -92,20 +59,10 @@ export const RegisterPage = () => {
         </div>
         <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Check your email</h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          Account record registered for <strong className="text-slate-800 dark:text-slate-200">{formData.email}</strong>.
-          Click below to confirm your account and enter your workspace immediately.
+          We have sent a verification link to <strong className="text-slate-800 dark:text-slate-200">{formData.email}</strong>. Please confirm your email address to complete registration.
         </p>
 
-        <div className="space-y-3 pt-2">
-          <Button
-            variant="primary"
-            className="w-full justify-center font-bold"
-            onClick={handleInstantVerificationLogin}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
-          >
-            Verify Email & Sign In Now
-          </Button>
-
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
           <Link to="/login" className="block">
             <Button variant="outline" className="w-full">
               Back to Login
