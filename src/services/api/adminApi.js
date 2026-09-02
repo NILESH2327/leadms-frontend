@@ -10,9 +10,9 @@ const DEFAULT_ANALYTICS = {
 
 const DEFAULT_USERS = [
   { _id: 'usr_admin_1', firstName: 'System', lastName: 'Administrator', email: 'admin@leadms.org', role: 'admin', designation: 'Super Admin' },
-  { _id: 'usr_vendor_1', firstName: 'Nilesh', lastName: 'Kumar', email: 'nileshkumar95559926@gmail.com', role: 'vendor', designation: 'Vendor Partner' },
-  { _id: 'usr_trader_1', firstName: 'Medical', lastName: 'Supplier Co', email: 'supplier@medical.com', role: 'trader', designation: 'Equipment Trader' },
-  { _id: 'usr_team_1', firstName: 'Suman', lastName: 'Prap', email: 'sumanprap6387@gmail.com', role: 'team-member', designation: 'Sales Associate' },
+  { _id: 'usr_vendor_1', firstName: 'Star', lastName: 'Nilesh', email: 'starnilesh38@gmail.com', role: 'vendor', designation: 'Vendor Partner' },
+  { _id: 'usr_trader_1', firstName: 'Suman', lastName: 'Prap', email: 'sumanprap6387@gmail.com', role: 'trader', designation: 'Equipment Trader' },
+  { _id: 'usr_vendor_2', firstName: 'Nilesh', lastName: 'Kumar', email: 'nileshkumar95559926@gmail.com', role: 'vendor', designation: 'Vendor Partner' },
 ];
 
 const DEFAULT_LEADS = [
@@ -22,7 +22,7 @@ const DEFAULT_LEADS = [
     customerEmail: 'procurement@cityhospital.org',
     customerPhone: '+1 555-0192',
     status: 'quoted',
-    vendorName: 'Apex Health Systems',
+    vendorName: 'Star Nilesh (starnilesh38@gmail.com)',
     quote: { baseTotal: 45000, marginApplied: 5000, finalTotal: 50000 },
   },
   {
@@ -31,7 +31,7 @@ const DEFAULT_LEADS = [
     customerEmail: 'admin@stjudeclinic.org',
     customerPhone: '+1 555-0348',
     status: 'new',
-    vendorName: 'Global Medical Supplies',
+    vendorName: 'Nilesh Kumar (nileshkumar95559926@gmail.com)',
     quote: null,
   },
   {
@@ -40,7 +40,7 @@ const DEFAULT_LEADS = [
     customerEmail: 'info@metrodiagnostics.com',
     customerPhone: '+1 555-0812',
     status: 'accepted',
-    vendorName: 'Apex Health Systems',
+    vendorName: 'Star Nilesh (starnilesh38@gmail.com)',
     quote: { baseTotal: 120000, marginApplied: 15000, finalTotal: 135000 },
   },
 ];
