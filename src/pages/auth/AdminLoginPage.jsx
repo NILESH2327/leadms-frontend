@@ -11,13 +11,15 @@ export const AdminLoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [localError, setLocalError] = useState('');
 
-  const { login, loading, error: authError, clearError } = useAuthStore();
+  const { login, logout, loading, error: authError, clearError } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     clearError();
+    setLocalError('');
   }, []);
 
   const validate = () => {
@@ -31,17 +33,20 @@ export const AdminLoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLocalError('');
     if (!validate()) return;
 
     const result = await login({ email, password });
     if (result.success) {
+      // Reject non-admin role logins on the Admin Portal
       if (result.user?.role !== ROLES.ADMIN) {
+        await logout();
+        setLocalError('Access Denied: Only Administrator accounts can sign in via the Admin Portal.');
         addToast({
-          type: 'warning',
-          title: 'Access Restricted',
-          message: 'Authenticated as non-admin user. Access granted to standard dashboard.',
+          type: 'error',
+          title: 'Admin Access Denied',
+          message: 'This account does not have Administrator privileges.',
         });
-        navigate('/dashboard', { replace: true });
         return;
       }
 
@@ -53,6 +58,8 @@ export const AdminLoginPage = () => {
       navigate('/admin', { replace: true });
     }
   };
+
+  const displayedError = localError || authError;
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-soft-lg backdrop-blur-md">
@@ -68,9 +75,9 @@ export const AdminLoginPage = () => {
         </p>
       </div>
 
-      {authError && (
+      {displayedError && (
         <div className="mb-4 p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 text-xs font-medium text-rose-700 dark:text-rose-300">
-          {authError}
+          {displayedError}
         </div>
       )}
 
@@ -81,7 +88,10 @@ export const AdminLoginPage = () => {
           placeholder="admin@leadms.org"
           value={email}
           onChange={(e) => {
-            if (authError) clearError();
+            if (displayedError) {
+              clearError();
+              setLocalError('');
+            }
             setEmail(e.target.value);
           }}
           error={errors.email}
@@ -95,7 +105,10 @@ export const AdminLoginPage = () => {
           placeholder="••••••••"
           value={password}
           onChange={(e) => {
-            if (authError) clearError();
+            if (displayedError) {
+              clearError();
+              setLocalError('');
+            }
             setPassword(e.target.value);
           }}
           error={errors.password}
