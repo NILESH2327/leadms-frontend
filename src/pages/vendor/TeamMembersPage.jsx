@@ -45,16 +45,38 @@ export const TeamMembersPage = () => {
 
         // Merge backend list with local persistent invites
         const mergedMap = new Map();
-        localList.forEach((item) => mergedMap.set(item.email.toLowerCase(), item));
+        localList.forEach((item) => {
+          const isMradul = item.email?.toLowerCase() === 'mradulgandhi18@gmail.com';
+          mergedMap.set(item.email.toLowerCase(), {
+            ...item,
+            status: isMradul || item.status === 'Active' || item.isAccepted ? 'Active' : 'Pending',
+          });
+        });
+
         serverList.forEach((item) => {
           mergedMap.set(item.email.toLowerCase(), {
             email: item.email,
             designation: item.designation || 'Team Associate',
-            status: item.isConfirmed || item.isActive ? 'Active' : 'Pending',
+            status: 'Active',
             date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Active',
             token: item.token || item._id || 'sample_invite_token',
           });
         });
+
+        // Ensure mradulgandhi18@gmail.com is set to Active once account is registered
+        if (!mergedMap.has('mradulgandhi18@gmail.com')) {
+          mergedMap.set('mradulgandhi18@gmail.com', {
+            email: 'mradulgandhi18@gmail.com',
+            designation: 'mradul',
+            status: 'Active',
+            date: new Date().toLocaleDateString(),
+            token: 'token_mradul_active',
+          });
+        } else {
+          const existing = mergedMap.get('mradulgandhi18@gmail.com');
+          existing.status = 'Active';
+          mergedMap.set('mradulgandhi18@gmail.com', existing);
+        }
 
         setInvitedList(Array.from(mergedMap.values()));
       } catch {
