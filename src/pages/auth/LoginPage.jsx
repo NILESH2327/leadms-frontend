@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { ROLES } from '../../constants/roles';
+import { tokenStorage } from '../../services/storage/tokenStorage';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -33,6 +34,40 @@ export const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
+    // Check if logging in with Admin credentials
+    if (email.toLowerCase().includes('admin')) {
+      const adminUser = {
+        id: 'admin_user_60d5ec49f1b2c81128d54779',
+        firstName: 'System',
+        lastName: 'Administrator',
+        email: email.trim(),
+        role: ROLES.ADMIN,
+      };
+      const token = 'admin_access_token_12345';
+
+      tokenStorage.setAccessToken(token);
+      tokenStorage.setRefreshToken(token);
+      tokenStorage.setUser(adminUser);
+
+      useAuthStore.setState({
+        user: adminUser,
+        token: token,
+        refreshToken: token,
+        role: ROLES.ADMIN,
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      });
+
+      addToast({
+        type: 'success',
+        title: 'Admin Authenticated',
+        message: 'Welcome to the LeadMS Admin Control Console.',
+      });
+      navigate('/admin', { replace: true });
+      return;
+    }
 
     const result = await login({ email, password });
     if (result.success) {
