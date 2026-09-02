@@ -31,13 +31,17 @@ export const AdminDashboardPage = () => {
     loadAnalytics();
   }, []);
 
-  const totalUsers = analytics?.users?.total ?? analytics?.totalUsers ?? 0;
+  const usersObj = analytics?.users || {};
+  const totalUsers = typeof usersObj === 'number' 
+    ? usersObj 
+    : Object.values(usersObj).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+
   const totalLeads = analytics?.leads?.total ?? analytics?.totalLeads ?? 0;
   const totalProducts = analytics?.products?.total ?? analytics?.totalProducts ?? 0;
   const totalRevenue = analytics?.revenue?.totalQuoted ?? analytics?.totalRevenue ?? 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">

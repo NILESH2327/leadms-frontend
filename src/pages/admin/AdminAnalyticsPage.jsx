@@ -29,25 +29,29 @@ export const AdminAnalyticsPage = () => {
     loadData();
   }, []);
 
-  // Normalize metrics
-  const totalUsers = analytics?.users?.total ?? 0;
-  const vendorsCount = analytics?.users?.vendors ?? 0;
-  const tradersCount = analytics?.users?.traders ?? 0;
-  const teamMembersCount = analytics?.users?.teamMembers ?? 0;
+  // Normalize metrics based on exact backend adminController.js shape
+  const usersObj = analytics?.users || {};
+  const vendorsCount = usersObj.vendor || usersObj.vendors || 0;
+  const tradersCount = usersObj.trader || usersObj.traders || 0;
+  const teamMembersCount = usersObj['team-member'] || usersObj.teamMembers || 0;
+  const totalUsers = typeof usersObj === 'number'
+    ? usersObj
+    : Object.values(usersObj).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   const totalLeads = analytics?.leads?.total ?? 0;
-  const newLeads = analytics?.leads?.new ?? 0;
-  const quotedLeads = analytics?.leads?.quoted ?? 0;
-  const acceptedLeads = analytics?.leads?.accepted ?? 0;
+  const byStatus = analytics?.leads?.byStatus || {};
+  const newLeads = byStatus.new ?? analytics?.leads?.new ?? 0;
+  const quotedLeads = byStatus.quoted ?? analytics?.leads?.quoted ?? 0;
+  const acceptedLeads = byStatus.accepted ?? analytics?.leads?.accepted ?? 0;
 
   const totalProducts = analytics?.products?.total ?? 0;
-  const lockedProducts = analytics?.products?.locked ?? 0;
+  const activeProducts = analytics?.products?.active ?? 0;
 
   const totalQuotedRevenue = analytics?.revenue?.totalQuoted ?? 0;
-  const projectedMargin = analytics?.revenue?.projectedMargin ?? 0;
+  const projectedMargin = analytics?.revenue?.totalExpectedMargin ?? analytics?.revenue?.projectedMargin ?? 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
