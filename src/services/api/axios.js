@@ -9,7 +9,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 20000,
 });
 
 let isRefreshing = false;
@@ -46,14 +46,37 @@ api.interceptors.response.use(
 
     // Network errors or server not responding
     if (!error.response) {
+      // Auto-retry once on network/wake-up timeout
+      if (originalRequest && (!originalRequest._networkRetryCount || originalRequest._networkRetryCount < 2)) {
+        originalRequest._networkRetryCount = (originalRequest._networkRetryCount || 0) + 1;
+        await new Promise((res) => setTimeout(res, 1500));
+        return api(originalRequest);
+      }
+
       const customError = {
-        message: 'Network error. Please check your internet connection or retry.',
+        message: 'Network connection or server waking up. Please retry.',
         status: 0,
       };
       return Promise.reject(customError);
     }
 
     const { status, data } = error.response;
+
+    // Check for Mongoose Database Cluster Wake-Up / Buffering Timeout
+    const isDbTimeout =
+      status === 500 ||
+      status === 504 ||
+      (data?.message &&
+        (data.message.includes('buffering timed out') ||
+          data.message.includes('users.findOne()') ||
+          data.message.includes('MongooseError')));
+
+    // Auto-retry database cluster timeouts up to 2 times without forcing login redirect
+    if (isDbTimeout && originalRequest && (!originalRequest._dbRetryCount || originalRequest._dbRetryCount < 2)) {
+      originalRequest._dbRetryCount = (originalRequest._dbRetryCount || 0) + 1;
+      await new Promise((res) => setTimeout(res, 1500));
+      return api(originalRequest);
+    }
 
     // Handle 401 Unauthorized & Refresh Token Logic
     if (status === 401 && !originalRequest._retry) {
@@ -83,8 +106,9 @@ api.interceptors.response.use(
 
       if (!refreshToken) {
         isRefreshing = false;
-        tokenStorage.clearAll();
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        // Don't force redirect if demo session or stored user exists
+        const user = tokenStorage.getUser();
+        if (!user && typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login?expired=1';
         }
         return Promise.reject({ status: 401, message: 'Session expired. Please log in again.' });
@@ -112,8 +136,9 @@ api.interceptors.response.use(
         }
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        tokenStorage.clearAll();
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        // Do not force window redirect if local user session exists
+        const user = tokenStorage.getUser();
+        if (!user && typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login?expired=1';
         }
         return Promise.reject({
