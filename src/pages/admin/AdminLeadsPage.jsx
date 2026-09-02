@@ -124,7 +124,12 @@ export const AdminLeadsPage = () => {
                 const leadId = lead.id || lead._id;
                 const statusCfg = LEAD_STATUS_CONFIG[lead.status] || LEAD_STATUS_CONFIG[LEAD_STATUSES.NEW];
                 const quoteTotal = lead.quote?.finalTotal || lead.quote?.total || null;
-                const vendorName = lead.vendorName || lead.vendorId?.name || lead.vendorId?.email || 'Vendor Partner';
+                
+                const vendorDisplay =
+                  lead.vendorName ||
+                  (lead.vendorId?.email ? `${lead.vendorId.name || 'Vendor'} (${lead.vendorId.email})` : null) ||
+                  lead.vendorEmail ||
+                  (lead.assignedTo ? `Assigned (${lead.assignedTo})` : 'Vendor Partner');
 
                 return (
                   <TableRow key={leadId}>
@@ -142,7 +147,7 @@ export const AdminLeadsPage = () => {
                     <TableCell className="text-xs text-slate-600 dark:text-slate-300">
                       <div className="flex items-center gap-1 font-medium">
                         <Building2 className="w-3.5 h-3.5 text-brand-600" />
-                        <span>{vendorName}</span>
+                        <span>{vendorDisplay}</span>
                       </div>
                     </TableCell>
                     <TableCell>

@@ -28,6 +28,15 @@ export const tokenStorage = {
     else localStorage.removeItem(USER_KEY);
   },
 
+  clearTokens: () => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  },
+
+  clearUser: () => {
+    localStorage.removeItem(USER_KEY);
+  },
+
   clearAll: () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);

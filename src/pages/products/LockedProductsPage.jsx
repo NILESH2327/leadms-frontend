@@ -9,10 +9,13 @@ import { SkeletonTable } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/feedback/EmptyState';
 import { ErrorAlert } from '../../components/feedback/ErrorAlert';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { Lock, Unlock, Search, ShoppingBag, ArrowRight } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
+import { ROLES } from '../../constants/roles';
+import { Lock, Unlock, Search, ShoppingBag, ArrowRight, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const LockedProductsPage = () => {
+  const { role } = useAuthStore();
   const { lockedProducts, fetchLockedProducts, unlockProduct, loading, error } = useProductStore();
   const { addToast } = useUIStore();
 
@@ -22,6 +25,8 @@ export const LockedProductsPage = () => {
   useEffect(() => {
     fetchLockedProducts();
   }, []);
+
+  const isTeamMember = role === ROLES.TEAM_MEMBER;
 
   const handleUnlock = async (product) => {
     const prodId = product.id || product._id;

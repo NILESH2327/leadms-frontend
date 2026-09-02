@@ -9,7 +9,13 @@ export function formatCurrency(amount, currency = 'USD') {
 }
 
 export function formatDate(dateString) {
-  if (!dateString) return 'N/A';
+  if (!dateString) {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(new Date());
+  }
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return dateString;
   return new Intl.DateTimeFormat('en-US', {

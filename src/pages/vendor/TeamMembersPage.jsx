@@ -8,7 +8,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Badge } from '../../components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/Table';
 import { Users, UserPlus, Mail, Briefcase, Search, Trash2, Link2, Copy, ExternalLink, Check } from 'lucide-react';
-import api from '../../services/api/axios';
+import { teamStorage } from '../../utils/teamStorage';
 
 const STORAGE_KEY = 'leadms_vendor_team_invites';
 
@@ -27,12 +27,11 @@ export const TeamMembersPage = () => {
   const [loading, setLoading] = useState(false);
   const [invitedList, setInvitedList] = useState([]);
 
-  // Load team invitations from local storage & backend
+  // Load team invitations from teamStorage & backend
   useEffect(() => {
     const loadInvites = async () => {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const localList = saved ? JSON.parse(saved) : [];
+        const storedList = teamStorage.getTeamMembers();
 
         // Try fetching team members from backend
         let serverList = [];
@@ -43,44 +42,24 @@ export const TeamMembersPage = () => {
           serverList = [];
         }
 
-        // Merge backend list with local persistent invites
         const mergedMap = new Map();
-        localList.forEach((item) => {
-          const isMradul = item.email?.toLowerCase() === 'mradulgandhi18@gmail.com';
-          mergedMap.set(item.email.toLowerCase(), {
-            ...item,
-            status: isMradul || item.status === 'Active' || item.isAccepted ? 'Active' : 'Pending',
-          });
+        storedList.forEach((item) => {
+          mergedMap.set(item.email.toLowerCase(), item);
         });
 
         serverList.forEach((item) => {
           mergedMap.set(item.email.toLowerCase(), {
             email: item.email,
-            designation: item.designation || 'Team Associate',
+            designation: item.designation || 'Team Lead',
             status: 'Active',
-            date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Active',
+            date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
             token: item.token || item._id || 'sample_invite_token',
           });
         });
 
-        // Ensure mradulgandhi18@gmail.com is set to Active once account is registered
-        if (!mergedMap.has('mradulgandhi18@gmail.com')) {
-          mergedMap.set('mradulgandhi18@gmail.com', {
-            email: 'mradulgandhi18@gmail.com',
-            designation: 'mradul',
-            status: 'Active',
-            date: new Date().toLocaleDateString(),
-            token: 'token_mradul_active',
-          });
-        } else {
-          const existing = mergedMap.get('mradulgandhi18@gmail.com');
-          existing.status = 'Active';
-          mergedMap.set('mradulgandhi18@gmail.com', existing);
-        }
-
         setInvitedList(Array.from(mergedMap.values()));
       } catch {
-        setInvitedList([]);
+        setInvitedList(teamStorage.getTeamMembers());
       }
     };
 
@@ -102,7 +81,7 @@ export const TeamMembersPage = () => {
 
     setLoading(true);
     const targetEmail = formData.email.trim();
-    const targetDesignation = formData.designation.trim() || 'Team Associate';
+    const targetDesignation = formData.designation.trim() || 'Team Lead';
     const generatedToken = `token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     try {
@@ -114,18 +93,21 @@ export const TeamMembersPage = () => {
       console.warn('Backend SMTP notice:', err?.message);
     }
 
+    const emailName = targetEmail.split('@')[0];
     const newInvite = {
+      _id: generatedToken,
+      id: generatedToken,
       email: targetEmail,
+      firstName: emailName.charAt(0).toUpperCase() + emailName.slice(1),
+      lastName: 'Team Lead',
       designation: targetDesignation,
-      status: 'Pending',
+      role: 'team-member',
+      status: 'Active',
       date: new Date().toLocaleDateString(),
       token: generatedToken,
     };
 
-    const updatedList = [
-      newInvite,
-      ...invitedList.filter((item) => item.email.toLowerCase() !== newInvite.email.toLowerCase()),
-    ];
+    const updatedList = teamStorage.addTeamMember(newInvite);
     setInvitedList(updatedList);
     saveInvitesToStorage(updatedList);
 

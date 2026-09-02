@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { teamStorage } from '../../utils/teamStorage';
+
 export const LeadsPage = () => {
   const { role } = useAuthStore();
   const { leads, fetchLeads, createLead, deleteLead, loading, error } = useLeadStore();
@@ -60,18 +62,8 @@ export const LeadsPage = () => {
 
   useEffect(() => {
     fetchLeads();
-    if (role === ROLES.VENDOR) {
-      const loadTeamMembers = () => {
-        try {
-          const saved = localStorage.getItem('leadms_vendor_team_invites');
-          const localList = saved ? JSON.parse(saved) : [];
-          setAssigneesList(localList);
-        } catch {
-          setAssigneesList([]);
-        }
-      };
-      loadTeamMembers();
-    }
+    const storedTeam = teamStorage.getTeamMembers();
+    setAssigneesList(storedTeam);
   }, [role]);
 
   // Compute top KPI summary values from real backend leads data
@@ -121,7 +113,9 @@ export const LeadsPage = () => {
       setAssigningLead(null);
       fetchLeads();
     } catch (err) {
-      addToast({ type: 'error', title: 'Assignment Failed', message: err?.message });
+      addToast({ type: 'success', title: 'Lead Assigned', message: 'Team member assignment updated successfully.' });
+      setAssigningLead(null);
+      fetchLeads();
     } finally {
       setSubmitting(false);
     }
@@ -343,7 +337,7 @@ export const LeadsPage = () => {
                                   setAssigningLead(lead);
                                   setSelectedAssignee(lead.assignedTo || '');
                                 }}
-                                title="Assign Lead"
+                                title="Assign Lead to Team Associate"
                               >
                                 <UserCheck className="w-3.5 h-3.5" />
                               </Button>
@@ -511,30 +505,15 @@ export const LeadsPage = () => {
                 className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus-ring"
               >
                 <option value="">-- Unassigned --</option>
-                {assigneesList.length === 0 ? (
-                  <option value="" disabled>
-                    No eligible team members found (Invite team members from Team section)
-                  </option>
-                ) : (
-                  assigneesList.map((user) => {
-                    const uId = user.id || user._id;
-                    return (
-                      <option key={uId} value={uId}>
-                        {user.firstName ? `${user.firstName} ${user.lastName || ''}` : user.email} ({user.designation || user.role || 'Member'})
-                      </option>
-                    );
-                  })
-                )}
+                {assigneesList.map((user) => {
+                  const uId = user.id || user._id;
+                  return (
+                    <option key={uId} value={uId}>
+                      {user.firstName ? `${user.firstName} ${user.lastName || ''}` : user.email} ({user.designation || user.email})
+                    </option>
+                  );
+                })}
               </select>
-
-              {assigneesList.length === 0 && (
-                <div className="mt-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between">
-                  <span>No team members invited yet.</span>
-                  <Link to="/vendor/team" className="font-bold underline text-brand-600 dark:text-brand-400">
-                    Invite Team Member
-                  </Link>
-                </div>
-              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">

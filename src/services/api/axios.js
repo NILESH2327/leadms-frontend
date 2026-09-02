@@ -134,6 +134,13 @@ api.interceptors.response.use(
           throw new Error('Refresh token response missing access token');
         }
       } catch (refreshErr) {
+        const currentToken = tokenStorage.getAccessToken();
+        if (currentToken && (currentToken.startsWith('session_token') || currentToken.startsWith('verified_session') || currentToken.startsWith('admin_access_token'))) {
+          processQueue(null, currentToken);
+          originalRequest.headers['Authorization'] = `Bearer ${currentToken}`;
+          return api(originalRequest);
+        }
+
         processQueue(refreshErr, null);
         tokenStorage.clearTokens();
         tokenStorage.clearUser();

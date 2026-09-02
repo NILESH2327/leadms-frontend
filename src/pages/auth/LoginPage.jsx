@@ -52,7 +52,7 @@ export const LoginPage = () => {
 
       useAuthStore.setState({
         user: adminUser,
-        token: token,
+        accessToken: token,
         refreshToken: token,
         role: ROLES.ADMIN,
         isAuthenticated: true,

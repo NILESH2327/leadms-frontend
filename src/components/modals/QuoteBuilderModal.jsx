@@ -61,17 +61,14 @@ export const QuoteBuilderModal = ({ isOpen, onClose, lead }) => {
 
     const leadId = lead.id || lead._id;
     
-    // Format request payload with products array to satisfy backend contract
+    // Format request payload strictly matching backend contract POST /api/leads/:id/quote
     const productsArray = selectedItems.map((i) => ({
       productId: i.productId,
-      quantity: i.quantity,
-      priceAtQuote: i.basePrice,
+      quantity: Number(i.quantity) || 1,
     }));
 
     const payload = {
       products: productsArray,
-      selectedProducts: productsArray,
-      items: productsArray,
     };
 
     setLoading(true);

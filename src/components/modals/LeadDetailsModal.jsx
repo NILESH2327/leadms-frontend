@@ -6,11 +6,36 @@ import { LEAD_STATUS_CONFIG, LEAD_STATUSES } from '../../constants/leadStatuses'
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { Mail, Phone, Calendar, UserCheck, Calculator, Building2, CheckCircle2 } from 'lucide-react';
 
+import { teamStorage } from '../../utils/teamStorage';
+
 export const LeadDetailsModal = ({ isOpen, onClose, lead, onAssignClick, onQuoteClick }) => {
   if (!lead) return null;
 
   const statusCfg = LEAD_STATUS_CONFIG[lead.status] || LEAD_STATUS_CONFIG[LEAD_STATUSES.NEW];
   const quote = lead.quote;
+
+  // Compute team member assignee details
+  const teamMembers = teamStorage.getTeamMembers();
+  let assignedDisplay = 'Unassigned';
+
+  if (lead.assignedToName) {
+    assignedDisplay = lead.assignedToName;
+  } else if (lead.assignedTo) {
+    const found = teamMembers.find(
+      (m) =>
+        m.id === lead.assignedTo ||
+        m._id === lead.assignedTo ||
+        m.email.toLowerCase() === lead.assignedTo.toLowerCase()
+    );
+    if (found) {
+      assignedDisplay = `${found.firstName} ${found.lastName} (${found.email})`;
+    } else {
+      assignedDisplay = lead.assignedTo;
+    }
+  } else if (teamMembers.length > 0) {
+    const defaultLead = teamMembers[0];
+    assignedDisplay = `${defaultLead.firstName} ${defaultLead.lastName} (${defaultLead.email})`;
+  }
 
   return (
     <Modal
@@ -48,7 +73,7 @@ export const LeadDetailsModal = ({ isOpen, onClose, lead, onAssignClick, onQuote
             </div>
             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
               <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-              <span>Assigned: {lead.assignedToName || lead.assignedTo || 'Unassigned'}</span>
+              <span>Assigned: {assignedDisplay}</span>
             </div>
           </div>
         </div>

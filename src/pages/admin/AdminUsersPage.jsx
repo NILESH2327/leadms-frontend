@@ -7,6 +7,8 @@ import { ErrorAlert } from '../../components/feedback/ErrorAlert';
 import { ROLE_LABELS, ROLE_BADGE_STYLES } from '../../constants/roles';
 import { Search, Mail } from 'lucide-react';
 
+import { teamStorage } from '../../utils/teamStorage';
+
 export const AdminUsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,12 +20,36 @@ export const AdminUsersPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await adminApi.getUsers();
-      const list = Array.isArray(data) ? data : data?.users || data?.data || [];
-      setUsers(list);
+      let list = [];
+      try {
+        const data = await adminApi.getUsers();
+        list = Array.isArray(data) ? data : data?.users || data?.data || [];
+      } catch {
+        list = [];
+      }
+
+      const teamMembers = teamStorage.getTeamMembers();
+      const mergedMap = new Map();
+      
+      list.forEach((u) => {
+        if (u.email) mergedMap.set(u.email.toLowerCase(), u);
+      });
+
+      teamMembers.forEach((tm) => {
+        if (tm.email && !mergedMap.has(tm.email.toLowerCase())) {
+          mergedMap.set(tm.email.toLowerCase(), {
+            id: tm.id || tm._id,
+            email: tm.email,
+            firstName: tm.firstName || tm.email.split('@')[0],
+            lastName: tm.lastName || 'Team Lead',
+            role: 'team-member',
+          });
+        }
+      });
+
+      setUsers(Array.from(mergedMap.values()));
     } catch (err) {
-      setError(err?.message || 'Failed to load system users from backend.');
-      setUsers([]);
+      setUsers(teamStorage.getTeamMembers());
     } finally {
       setLoading(false);
     }

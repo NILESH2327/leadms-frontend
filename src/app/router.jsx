@@ -38,14 +38,21 @@ import { AccessDeniedPage } from '../pages/errors/AccessDeniedPage';
 
 import { ROLES } from '../constants/roles';
 
+// Landing Page
+import { LandingPage } from '../pages/landing/LandingPage';
+
 // Smart switcher component for /products route based on user role
 const ProductRouteSwitcher = () => {
   const { role } = useAuthStore();
   if (role === ROLES.TRADER) return <TraderProductsPage />;
+  if (role === ROLES.TEAM_MEMBER) return <LockedProductsPage />;
   return <VendorProductsPage />;
 };
 
 export const router = createBrowserRouter([
+  // Public Landing Page
+  { path: '/', element: <LandingPage /> },
+
   // Auth Public Routes
   {
     element: <AuthLayout />,
@@ -69,7 +76,6 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: '/', element: <Navigate to="/dashboard" replace /> },
       { path: '/dashboard', element: <DashboardShellPage /> },
 
       // Feature Pages
