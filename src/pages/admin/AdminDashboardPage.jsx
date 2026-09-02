@@ -22,7 +22,6 @@ export const AdminDashboardPage = () => {
       setAnalytics(data?.data || data);
     } catch (err) {
       setError(err?.message || 'Failed to load system analytics.');
-      setAnalytics(null);
     } finally {
       setLoading(false);
     }
@@ -52,25 +51,21 @@ export const AdminDashboardPage = () => {
             Enterprise system monitoring, multi-tenant statistics, and user role distribution.
           </p>
         </div>
-        {!error && !loading && analytics && (
-          <div className="flex items-center gap-2">
-            <Badge variant="brand" dot>Live System Data</Badge>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Badge variant="brand" dot>Live System Data</Badge>
+        </div>
       </div>
 
       {error && <ErrorAlert message={error} onRetry={loadAnalytics} />}
 
-      {loading && (
+      {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
         </div>
-      )}
-
-      {!loading && !error && analytics && (
+      ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="hover:border-brand-500/50 transition-colors">
             <CardContent className="flex items-center justify-between p-5">
