@@ -6,7 +6,7 @@ import { Badge } from '../../components/ui/Badge';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorAlert } from '../../components/feedback/ErrorAlert';
 import { formatCurrency } from '../../utils/formatters';
-import { Users, FileText, Package, DollarSign, TrendingUp, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Users, FileText, Package, DollarSign, TrendingUp, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const AdminDashboardPage = () => {
@@ -21,18 +21,8 @@ export const AdminDashboardPage = () => {
       const data = await adminApi.getAnalytics();
       setAnalytics(data?.data || data);
     } catch (err) {
-      // 403 Handling: Provide fallback metrics for Admin UI inspection when live backend lacks seeded Admin JWT
-      if (err?.status === 403 || err?.message?.includes('403')) {
-        setAnalytics({
-          users: { trader: 5, vendor: 12, 'team-member': 30, admin: 1 },
-          leads: { total: 150, byStatus: { new: 50, quoted: 80, contacted: 10, accepted: 8, rejected: 2 } },
-          products: { total: 200, active: 190 },
-          revenue: { totalQuoted: 500000, totalExpectedMargin: 50000 },
-        });
-        setError(null);
-      } else {
-        setError(err?.message || 'Failed to load system analytics.');
-      }
+      setError(err?.message || 'Failed to load system analytics.');
+      setAnalytics(null);
     } finally {
       setLoading(false);
     }
@@ -43,8 +33,8 @@ export const AdminDashboardPage = () => {
   }, []);
 
   const usersObj = analytics?.users || {};
-  const totalUsers = typeof usersObj === 'number' 
-    ? usersObj 
+  const totalUsers = typeof usersObj === 'number'
+    ? usersObj
     : Object.values(usersObj).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   const totalLeads = analytics?.leads?.total ?? analytics?.totalLeads ?? 0;
@@ -62,21 +52,25 @@ export const AdminDashboardPage = () => {
             Enterprise system monitoring, multi-tenant statistics, and user role distribution.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="brand" dot>Live System Data</Badge>
-        </div>
+        {!error && !loading && analytics && (
+          <div className="flex items-center gap-2">
+            <Badge variant="brand" dot>Live System Data</Badge>
+          </div>
+        )}
       </div>
 
       {error && <ErrorAlert message={error} onRetry={loadAnalytics} />}
 
-      {loading ? (
+      {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
         </div>
-      ) : (
+      )}
+
+      {!loading && !error && analytics && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="hover:border-brand-500/50 transition-colors">
             <CardContent className="flex items-center justify-between p-5">

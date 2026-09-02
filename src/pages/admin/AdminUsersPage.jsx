@@ -7,13 +7,6 @@ import { ErrorAlert } from '../../components/feedback/ErrorAlert';
 import { ROLE_LABELS, ROLE_BADGE_STYLES } from '../../constants/roles';
 import { Search, Mail } from 'lucide-react';
 
-const FALLBACK_USERS = [
-  { _id: 'usr_admin_1', firstName: 'System', lastName: 'Administrator', email: 'admin@leadms.org', role: 'admin', designation: 'Super Admin' },
-  { _id: 'usr_vendor_1', firstName: 'Nilesh', lastName: 'Kumar', email: 'nileshkumar95559926@gmail.com', role: 'vendor', designation: 'Vendor Manager' },
-  { _id: 'usr_trader_1', firstName: 'Medical', lastName: 'Supplier Co', email: 'supplier@medical.com', role: 'trader', designation: 'Equipment Trader' },
-  { _id: 'usr_team_1', firstName: 'Suman', lastName: 'Prap', email: 'sumanprap6387@gmail.com', role: 'team-member', designation: 'Sales Associate' },
-];
-
 export const AdminUsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,12 +22,8 @@ export const AdminUsersPage = () => {
       const list = Array.isArray(data) ? data : data?.users || data?.data || [];
       setUsers(list);
     } catch (err) {
-      if (err?.status === 403 || err?.message?.includes('403')) {
-        setUsers(FALLBACK_USERS);
-        setError(null);
-      } else {
-        setError(err?.message || 'Failed to load system users.');
-      }
+      setError(err?.message || 'Failed to load system users from backend.');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -98,9 +87,9 @@ export const AdminUsersPage = () => {
 
       {error && <ErrorAlert message={error} onRetry={loadUsers} />}
 
-      {loading ? (
-        <SkeletonTable rows={5} cols={3} />
-      ) : (
+      {loading && <SkeletonTable rows={5} cols={3} />}
+
+      {!loading && !error && (
         <Table>
           <TableHeader>
             <TableRow>

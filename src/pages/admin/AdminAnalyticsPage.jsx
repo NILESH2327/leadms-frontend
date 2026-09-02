@@ -19,17 +19,8 @@ export const AdminAnalyticsPage = () => {
       const res = await adminApi.getAnalytics();
       setAnalytics(res?.data || res);
     } catch (err) {
-      if (err?.status === 403 || err?.message?.includes('403')) {
-        setAnalytics({
-          users: { trader: 5, vendor: 12, 'team-member': 30, admin: 1 },
-          leads: { total: 150, byStatus: { new: 50, quoted: 80, contacted: 10, accepted: 8, rejected: 2 } },
-          products: { total: 200, active: 190 },
-          revenue: { totalQuoted: 500000, totalExpectedMargin: 50000 },
-        });
-        setError(null);
-      } else {
-        setError(err?.message || 'Failed to load analytics.');
-      }
+      setError(err?.message || 'Failed to load analytics from backend.');
+      setAnalytics(null);
     } finally {
       setLoading(false);
     }
@@ -71,12 +62,14 @@ export const AdminAnalyticsPage = () => {
 
       {error && <ErrorAlert message={error} onRetry={loadData} />}
 
-      {loading ? (
+      {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <SkeletonCard />
           <SkeletonCard />
         </div>
-      ) : (
+      )}
+
+      {!loading && !error && analytics && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Users by Role Breakdown */}
           <Card>

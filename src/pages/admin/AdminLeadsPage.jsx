@@ -11,36 +11,6 @@ import { LEAD_STATUS_CONFIG, LEAD_STATUSES } from '../../constants/leadStatuses'
 import { formatCurrency } from '../../utils/formatters';
 import { Search, Mail, Eye, Building2 } from 'lucide-react';
 
-const FALLBACK_LEADS = [
-  {
-    _id: 'lead_101',
-    customerName: 'City General Hospital',
-    customerEmail: 'procurement@cityhospital.org',
-    customerPhone: '+1 555-0192',
-    status: 'quoted',
-    vendorName: 'Apex Health Systems',
-    quote: { baseTotal: 45000, marginApplied: 5000, finalTotal: 50000 },
-  },
-  {
-    _id: 'lead_102',
-    customerName: 'St. Jude Children Clinic',
-    customerEmail: 'admin@stjudeclinic.org',
-    customerPhone: '+1 555-0348',
-    status: 'new',
-    vendorName: 'Global Medical Supplies',
-    quote: null,
-  },
-  {
-    _id: 'lead_103',
-    customerName: 'Metro Diagnostic Center',
-    customerEmail: 'info@metrodiagnostics.com',
-    customerPhone: '+1 555-0812',
-    status: 'accepted',
-    vendorName: 'Apex Health Systems',
-    quote: { baseTotal: 120000, marginApplied: 15000, finalTotal: 135000 },
-  },
-];
-
 export const AdminLeadsPage = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,12 +27,8 @@ export const AdminLeadsPage = () => {
       const list = Array.isArray(data) ? data : data?.leads || data?.data || [];
       setLeads(list);
     } catch (err) {
-      if (err?.status === 403 || err?.message?.includes('403')) {
-        setLeads(FALLBACK_LEADS);
-        setError(null);
-      } else {
-        setError(err?.message || 'Failed to load system leads.');
-      }
+      setError(err?.message || 'Failed to load system leads from backend.');
+      setLeads([]);
     } finally {
       setLoading(false);
     }
@@ -77,7 +43,7 @@ export const AdminLeadsPage = () => {
       (lead.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (lead.customerEmail || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (lead.customerPhone || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (lead.vendorName || lead.vendorId?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+      (lead.vendorName || lead.vendorId?.name || lead.vendorId?.email || '').toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = activeTab === 'all' || (lead.status || 'new') === activeTab;
     return matchesSearch && matchesStatus;
@@ -133,9 +99,9 @@ export const AdminLeadsPage = () => {
 
       {error && <ErrorAlert message={error} onRetry={loadLeads} />}
 
-      {loading ? (
-        <SkeletonTable rows={5} cols={5} />
-      ) : (
+      {loading && <SkeletonTable rows={5} cols={5} />}
+
+      {!loading && !error && (
         <Table>
           <TableHeader>
             <TableRow>
