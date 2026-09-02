@@ -61,27 +61,16 @@ export const LeadsPage = () => {
   useEffect(() => {
     fetchLeads();
     if (role === ROLES.VENDOR) {
-      const fetchTeamMembers = async () => {
+      const loadTeamMembers = () => {
         try {
-          let res = null;
-          try {
-            res = await api.get('/vendor/team');
-          } catch {
-            try {
-              res = await api.get('/auth/team');
-            } catch {
-              res = null;
-            }
-          }
-          const users = Array.isArray(res?.data)
-            ? res.data
-            : res?.data?.team || res?.data?.users || res?.data?.data || [];
-          setAssigneesList(users);
+          const saved = localStorage.getItem('leadms_vendor_team_invites');
+          const localList = saved ? JSON.parse(saved) : [];
+          setAssigneesList(localList);
         } catch {
           setAssigneesList([]);
         }
       };
-      fetchTeamMembers();
+      loadTeamMembers();
     }
   }, [role]);
 

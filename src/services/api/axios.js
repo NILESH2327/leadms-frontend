@@ -46,7 +46,6 @@ api.interceptors.response.use(
 
     // Network errors or server not responding
     if (!error.response) {
-      // Auto-retry once on network/wake-up timeout
       if (originalRequest && (!originalRequest._networkRetryCount || originalRequest._networkRetryCount < 2)) {
         originalRequest._networkRetryCount = (originalRequest._networkRetryCount || 0) + 1;
         await new Promise((res) => setTimeout(res, 1500));
@@ -106,9 +105,9 @@ api.interceptors.response.use(
 
       if (!refreshToken) {
         isRefreshing = false;
-        // Don't force redirect if demo session or stored user exists
-        const user = tokenStorage.getUser();
-        if (!user && typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        tokenStorage.clearTokens();
+        tokenStorage.clearUser();
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login?expired=1';
         }
         return Promise.reject({ status: 401, message: 'Session expired. Please log in again.' });
@@ -136,9 +135,9 @@ api.interceptors.response.use(
         }
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        // Do not force window redirect if local user session exists
-        const user = tokenStorage.getUser();
-        if (!user && typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        tokenStorage.clearTokens();
+        tokenStorage.clearUser();
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login?expired=1';
         }
         return Promise.reject({
