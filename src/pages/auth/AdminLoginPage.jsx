@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ROLES } from '../../constants/roles';
 
-export const LoginPage = () => {
+export const AdminLoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -15,7 +15,6 @@ export const LoginPage = () => {
   const { login, loading, error: authError, clearError } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     clearError();
@@ -23,7 +22,7 @@ export const LoginPage = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!email.trim()) newErrors.email = 'Email address is required';
+    if (!email.trim()) newErrors.email = 'Admin email address is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Please enter a valid email address';
     if (!password) newErrors.password = 'Password is required';
     setErrors(newErrors);
@@ -36,31 +35,36 @@ export const LoginPage = () => {
 
     const result = await login({ email, password });
     if (result.success) {
+      if (result.user?.role !== ROLES.ADMIN) {
+        addToast({
+          type: 'warning',
+          title: 'Access Restricted',
+          message: 'Authenticated as non-admin user. Access granted to standard dashboard.',
+        });
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+
       addToast({
         type: 'success',
-        title: 'Welcome back!',
-        message: 'Successfully authenticated to LeadMS CRM.',
+        title: 'Admin Authenticated',
+        message: 'Welcome to the LeadMS Admin Control Console.',
       });
-
-      // Role-specific redirect
-      const userRole = result.user?.role;
-      const targetPath =
-        userRole === ROLES.ADMIN
-          ? '/admin'
-          : location.state?.from?.pathname || '/dashboard';
-
-      navigate(targetPath, { replace: true });
+      navigate('/admin', { replace: true });
     }
   };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-soft-lg backdrop-blur-md">
       <div className="text-center mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          Sign in to your account
+        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <Shield className="w-6 h-6" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+          Admin Control Portal
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Welcome back! Please enter your details below.
+          Authorized System Administrator Login
         </p>
       </div>
 
@@ -72,9 +76,9 @@ export const LoginPage = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="Email Address"
+          label="Admin Email Address"
           type="email"
-          placeholder="name@company.com"
+          placeholder="admin@leadms.org"
           value={email}
           onChange={(e) => {
             if (authError) clearError();
@@ -99,51 +103,23 @@ export const LoginPage = () => {
           required
         />
 
-        <div className="flex items-center justify-between text-xs pt-1">
-          <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400">
-            <input
-              type="checkbox"
-              className="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500"
-              defaultChecked
-            />
-            <span>Remember me</span>
-          </label>
-          <Link
-            to="/forgot-password"
-            className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline"
-          >
-            Forgot password?
-          </Link>
-        </div>
-
         <Button
           type="submit"
           variant="primary"
-          className="w-full mt-2"
+          className="w-full mt-2 bg-purple-600 hover:bg-purple-700 text-white"
           isLoading={loading}
           rightIcon={<ArrowRight className="w-4 h-4" />}
         >
-          Sign In
+          Sign In to Admin Console
         </Button>
       </form>
 
-      {/* Admin Portal Quick Link */}
-      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+      <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
         <Link
-          to="/admin/login"
-          className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1"
+          to="/login"
+          className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium inline-flex items-center gap-1.5"
         >
-          <ShieldCheck className="w-3.5 h-3.5" /> Go to Admin Portal Login
-        </Link>
-      </div>
-
-      <div className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
-        Don't have an account?{' '}
-        <Link
-          to="/register"
-          className="font-semibold text-brand-600 dark:text-brand-400 hover:underline"
-        >
-          Register as Vendor or Trader
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Vendor / Trader Sign In
         </Link>
       </div>
     </div>

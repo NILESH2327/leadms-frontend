@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/authStore';
 
 // Auth Pages
 import { LoginPage } from '../pages/auth/LoginPage';
+import { AdminLoginPage } from '../pages/auth/AdminLoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
     element: <AuthLayout />,
     children: [
       { path: '/login', element: <LoginPage /> },
+      { path: '/admin/login', element: <AdminLoginPage /> },
       { path: '/register', element: <RegisterPage /> },
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
